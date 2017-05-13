@@ -5,6 +5,7 @@
  */
 package ps2.database;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -18,7 +19,7 @@ import ps2.objects.DataSet;
  *
  * @author Bang Pham Huu mailto: b.phamhuu@jacobs-univeristy.de
  */
-public class DatabaseHandler {
+public class DatabaseHandler {        
 
     private Connection conn;
 
@@ -28,15 +29,20 @@ public class DatabaseHandler {
             + "ST_AsText(ST_FlipCoordinates(shape)) as polygon\n"
             + " from dataset ";
 
-    public DatabaseHandler() {
-        connect();
+    public DatabaseHandler() throws RuntimeException {
+        try {
+            connect();
+        } catch(Exception ex) {
+            throw new RuntimeException("Cannot write log file: ", ex);
+        }
     }
 
-    public void connect() {
+    public void connect() throws IOException {
         try {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/ps2", "ps2user", "ps2user");
         } catch (Exception e) {
+            MessageLog.write(e.getMessage());
             e.printStackTrace();
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
@@ -49,10 +55,11 @@ public class DatabaseHandler {
      * @param type
      * @return
      */
-    public List<DataSet> getAllCoverages(String type) {
+    public List<DataSet> getAllCoverages(String type) throws IOException {
         List<DataSet> dataSetList = new ArrayList<DataSet>();
         try {
             String query = SELECT_QUERY + "where type='" + type + "'";
+            MessageLog.write(query);
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
 
@@ -78,10 +85,11 @@ public class DatabaseHandler {
      * @param coverageID
      * @return
      */
-    public List<DataSet> getCoverageByCoverageID(String coverageID) {
+    public List<DataSet> getCoverageByCoverageID(String coverageID) throws IOException {
         List<DataSet> dataSetList = new ArrayList<DataSet>();
         try {
             String query = SELECT_QUERY + "where coverageid='" + coverageID + "'";
+            MessageLog.write(query);
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
 
@@ -109,12 +117,13 @@ public class DatabaseHandler {
      * @param type
      * @return
      */
-    public List<DataSet> getCoverageContainingPoint(String latPoint, String longPoint, String type) {
+    public List<DataSet> getCoverageContainingPoint(String latPoint, String longPoint, String type) throws IOException {
         List<DataSet> dataSetList = new ArrayList<DataSet>();
         try {
             String query = SELECT_QUERY + "where type='" + type + "' and st_contains(shape, ST_GeomFromText('POINT($longPoint $latPoint)')) = 't'";
             query = query.replace("$longPoint", longPoint);
             query = query.replace("$latPoint", latPoint);
+            MessageLog.write(query);
 
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
@@ -145,7 +154,7 @@ public class DatabaseHandler {
      * @param type
      * @return
      */
-    public List<DataSet> getCoveragesIntersectBoundingBox(String minLat, String minLong, String maxLat, String maxLong, String type) {
+    public List<DataSet> getCoveragesIntersectBoundingBox(String minLat, String minLong, String maxLat, String maxLong, String type) throws IOException {
         List<DataSet> dataSetList = new ArrayList<DataSet>();
         try {
             String query = SELECT_QUERY + " where type='" + type + "' and st_intersects(shape, ST_GeomFromText('POLYGON(($minLong $minLat, $maxLong $minLat, $maxLong $maxLat, $minLong $maxLat, $minLong $minLat))')) = 't'";
@@ -153,6 +162,7 @@ public class DatabaseHandler {
             query = query.replace("$minLat", minLat);
             query = query.replace("$maxLong", maxLong);
             query = query.replace("$maxLat", maxLat);
+            MessageLog.write(query);
 
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);

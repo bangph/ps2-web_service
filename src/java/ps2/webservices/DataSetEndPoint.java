@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import ps2.database.DatabaseHandler;
+import ps2.database.MessageLog;
 import ps2.objects.DataSet;
 
 /*
@@ -21,8 +22,7 @@ import ps2.objects.DataSet;
  */
 /**
  *
- * @author Bang Pham Huu
- * mailto: b.phamhuu@jacobs-univeristy.de
+ * @author Bang Pham Huu mailto: b.phamhuu@jacobs-univeristy.de
  */
 public class DataSetEndPoint extends HttpServlet {
 
@@ -49,6 +49,7 @@ public class DataSetEndPoint extends HttpServlet {
 
         // Get all coverages with out params
         if (requestParam.equals("getAllCoverages")) {
+            MessageLog.write("get all coverges");
             // all coverages in JSON
             getAllCoveragess(response, type);
 
@@ -56,6 +57,7 @@ public class DataSetEndPoint extends HttpServlet {
         else if (requestParam.equals("getCoveragesContainingPoint")) {
             String latPoint = request.getParameter("latPoint");
             String longPoint = request.getParameter("longPoint");
+            MessageLog.write("get coverages containing point, latPoint: " + latPoint + ", longPoint: " + longPoint);
 
             // all coverages containing point in JSON
             getCoveragessContainingPointHandle(response, latPoint, longPoint, type);
@@ -65,6 +67,8 @@ public class DataSetEndPoint extends HttpServlet {
             String maxLat = request.getParameter("maxLat");
             String maxLong = request.getParameter("maxLong");
 
+            MessageLog.write("get coverages intersect bounding box: minLat:" + minLat + ", minLong: " + minLong + ", maxLat: " + maxLat + ", maxLong: " + maxLong);
+
             // all coverages intersecting bounding box in XML
             getCoveragesIntersectBoundingBox(response, minLat, minLong, maxLat, maxLong, type);
         } else if (requestParam.equals("getCoverage")) {
@@ -73,6 +77,7 @@ public class DataSetEndPoint extends HttpServlet {
                 coverageId = request.getParameter("coverageId");
             }
 
+            MessageLog.write("get coverage: " + coverageId);
             getCoverageByCoverageID(response, coverageId);
 
             // get the coverage information by coverageID
@@ -83,7 +88,7 @@ public class DataSetEndPoint extends HttpServlet {
      * Query all the coverages by type of image
      *
      */
-    private void getAllCoveragess(HttpServletResponse response, String type) {
+    private void getAllCoveragess(HttpServletResponse response, String type) throws IOException {
         List<DataSet> coverages = databaseHandler.getAllCoverages(type);
         dumpJSON(response, coverages);
     }
@@ -119,7 +124,7 @@ public class DataSetEndPoint extends HttpServlet {
      * @param latPoint
      * @param longPoint
      */
-    private void getCoveragessContainingPointHandle(HttpServletResponse response, String latPoint, String longPoint, String type) {
+    private void getCoveragessContainingPointHandle(HttpServletResponse response, String latPoint, String longPoint, String type) throws IOException {
         List<DataSet> coverages = databaseHandler.getCoverageContainingPoint(latPoint, longPoint, type);
         dumpJSON(response, coverages);
     }
