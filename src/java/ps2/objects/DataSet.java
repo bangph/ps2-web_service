@@ -10,11 +10,13 @@ import java.util.List;
 
 /**
  *
- * @author Bang Pham Huu
- * mailto: b.phamhuu@jacobs-univeristy.de
+ * @author Bang Pham Huu mailto: b.phamhuu@jacobs-univeristy.de
  */
 public class DataSet {
+
     public String coverageID = "";
+    // mars_mrdr, mars_trdr, moon
+    public String type = "";
     public List<Double> latList = new ArrayList<Double>();
     public List<Double> longList = new ArrayList<Double>();
     public double Easternmost_longitude = 0;
@@ -26,10 +28,5 @@ public class DataSet {
     public double height = 0;
     public double centroid_latitude = 0;
     public double centroid_longitude = 0;
-    
-    // mars/moon
-    public String type = "";
-    // mars: mrdr, trdr
-    public String sub_type = "";
 
 }

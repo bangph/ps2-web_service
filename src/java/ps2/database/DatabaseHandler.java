@@ -23,7 +23,7 @@ public class DatabaseHandler {
     private Connection conn;
 
     // Always query with all the fields from dataset table        
-    private final String SELECT_QUERY = "SELECT coverageid, easternmost_longitude, maximum_latitude, minimum_latitude, \n"
+    private final String SELECT_QUERY = "SELECT coverageid, type, easternmost_longitude, maximum_latitude, minimum_latitude, \n"
             + "westernmost_longitude, centroid_longitude, centroid_latitude, width, height, resolution,"
             + "ST_AsText(ST_FlipCoordinates(shape)) as polygon\n"
             + " from dataset ";
@@ -176,6 +176,7 @@ public class DatabaseHandler {
     private DataSet buildDataSet(ResultSet rs) throws SQLException {
         DataSet dataSet = new DataSet();
         dataSet.coverageID = rs.getString("coverageid").trim();
+        dataSet.type = rs.getString("type");
         dataSet.Easternmost_longitude = rs.getDouble("easternmost_longitude");
         dataSet.Maximum_latitude = rs.getDouble("maximum_latitude");
         dataSet.Minimum_latitude = rs.getDouble("minimum_latitude");
@@ -183,7 +184,7 @@ public class DatabaseHandler {
         dataSet.centroid_longitude = rs.getDouble("centroid_longitude");
         dataSet.centroid_latitude = rs.getDouble("centroid_latitude");
         dataSet.width = rs.getInt("width");
-        dataSet.height = rs.getInt("height");
+        dataSet.height = rs.getInt("height");        
         dataSet.resolution = rs.getDouble("resolution");
 
         List<ArrayList<Double>> list = getLatLongList(rs.getString("polygon"));
