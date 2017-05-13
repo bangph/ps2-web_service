@@ -22,6 +22,7 @@ import ps2.objects.DataSet;
 /**
  *
  * @author Bang Pham Huu
+ * mailto: b.phamhuu@jacobs-univeristy.de
  */
 public class DataSetEndPoint extends HttpServlet {
 
@@ -41,14 +42,15 @@ public class DataSetEndPoint extends HttpServlet {
         // pattern URL/dataset?request=...&params=...
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Origin", "*");
-        
+
         String requestParam = request.getParameter("request");
-        String type = request.getParameter("type");                       
+        // The data type (mars_mrdr, mars_trdr, moon)
+        String type = request.getParameter("type");
 
         // Get all coverages with out params
         if (requestParam.equals("getAllCoverages")) {
             // all coverages in JSON
-            getAllCoveragess(response, type);        
+            getAllCoveragess(response, type);
 
         } // Get all coverages containing point user clicked (params (latPoint=...&longPoint=...))
         else if (requestParam.equals("getCoveragesContainingPoint")) {
@@ -61,21 +63,22 @@ public class DataSetEndPoint extends HttpServlet {
             String minLat = request.getParameter("minLat");
             String minLong = request.getParameter("minLong");
             String maxLat = request.getParameter("maxLat");
-            String maxLong = request.getParameter("maxLong");         
-            
+            String maxLong = request.getParameter("maxLong");
+
             // all coverages intersecting bounding box in XML
             getCoveragesIntersectBoundingBox(response, minLat, minLong, maxLat, maxLong, type);
         } else if (requestParam.equals("getCoverage")) {
-            String coverageID = request.getParameter("coverageID");
-            
-            getCoverageByCoverageID(response, coverageID);
-            
+            String coverageId = request.getParameter("coverageID");
+            if (coverageId == null) {
+                coverageId = request.getParameter("coverageId");
+            }
+
+            getCoverageByCoverageID(response, coverageId);
+
             // get the coverage information by coverageID
-            
         }
     }
-    
-    
+
     /**
      * Query all the coverages by type of image
      *
@@ -84,25 +87,26 @@ public class DataSetEndPoint extends HttpServlet {
         List<DataSet> coverages = databaseHandler.getAllCoverages(type);
         dumpJSON(response, coverages);
     }
-    
-    
+
     /**
      * Query all the coverage by bounding box (intersect or within)
+     *
      * @param response
      * @param minLat
      * @param minLong
      * @param maxLat
-     * @param maxLong 
+     * @param maxLong
      */
     private void getCoveragesIntersectBoundingBox(HttpServletResponse response, String minLat, String minLong, String maxLat, String maxLong, String type) throws IOException {
         List<DataSet> coverages = databaseHandler.getCoveragesIntersectBoundingBox(minLat, minLong, maxLat, maxLong, type);
         dumpXML(response, coverages);
     }
-    
+
     /**
      * Query only information for coverageID
+     *
      * @param response
-     * @param coverageID 
+     * @param coverageID
      */
     private void getCoverageByCoverageID(HttpServletResponse response, String coverageID) throws IOException {
         List<DataSet> coverages = databaseHandler.getCoverageByCoverageID(coverageID);
@@ -174,61 +178,64 @@ public class DataSetEndPoint extends HttpServlet {
             Logger.getLogger(DataSetEndPoint.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Dump as XML to client
+     *
      * @param response
-     * @param object 
+     * @param object
      */
     private void dumpXML(HttpServletResponse response, List<DataSet> datasets) {
         String TEMPLATE = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-                        + "<PS2Results>"
-                        + " <Status>Sucess</Status>"                        
-                        + " <Products>"
-                        + " $products"
-                        + " </Products>"
-                        + "</PS2Results>";
-        
+                + "<PS2Results>"
+                + " <Status>Sucess</Status>"
+                + " <Products>"
+                + " $products"
+                + " </Products>"
+                + "</PS2Results>";
+
         String PRODUCT_TEMPLATE = " <Product>"
-                                + "  <pdsid>$coverageID</pdsid>"
-                                + "  <type>$type</type>"
-                                + "  <boundingbox>"
-                                + "   <minLat>$minLat</minLat>"
-                                + "   <minLong>$minLong</minLong>"
-                                + "   <maxLat>$maxLat</maxLat>"
-                                + "   <maxLong>$maxLong</maxLong>"
-                                + "  </boundingbox>"
-                                + "  <centroid>"
-                                + "   <centroidLat>$centroid_latitude</centroidLat>"
-                                + "   <centroidLong>$centroid_longitude</centroidLong>"
-                                + "  </centroid>"
-                                + "  <latList>$latList</latList>"
-                                + "  <longList>$longList</longList>"
-                                + "  <width>$width</width>"
-                                + "  <height>$height</height>"
-                                + " </Product>";
-        
+                + "  <pdsid>$coverageID</pdsid>"
+                + "  <type>$type</type>"
+                + "  <boundingbox>"
+                + "   <minLat>$minLat</minLat>"
+                + "   <minLong>$minLong</minLong>"
+                + "   <maxLat>$maxLat</maxLat>"
+                + "   <maxLong>$maxLong</maxLong>"
+                + "  </boundingbox>"
+                + "  <centroid>"
+                + "   <centroidLat>$centroid_latitude</centroidLat>"
+                + "   <centroidLong>$centroid_longitude</centroidLong>"
+                + "  </centroid>"
+                + "  <latList>$latList</latList>"
+                + "  <longList>$longList</longList>"
+                + "  <width>$width</width>"
+                + "  <height>$height</height>"
+                + "  <resolution>$resolution</resolution>"
+                + " </Product>";
+
         String products = "";
-        for (DataSet dataset:datasets) {
+        for (DataSet dataset : datasets) {
             String latList = this.listToString(dataset.latList);
             String longList = this.listToString(dataset.longList);
             String product = PRODUCT_TEMPLATE.replace("$coverageID", dataset.coverageID)
-                                             .replace("$type", dataset.type)
-                                             .replace("$minLat", String.valueOf(dataset.Minimum_latitude))
-                                             .replace("$minLong", String.valueOf(dataset.Westernmost_longitude))
-                                             .replace("$maxLat", String.valueOf(dataset.Maximum_latitude))
-                                             .replace("$maxLong", String.valueOf(dataset.Easternmost_longitude))
-                                             .replace("$centroid_latitude", String.valueOf(dataset.centroid_latitude))
-                                             .replace("$centroid_longitude", String.valueOf(dataset.centroid_longitude))
-                                             .replace("$latList", latList)
-                                             .replace("$longList", longList)
-                                             .replace("$width", String.valueOf(dataset.width))
-                                             .replace("$height", String.valueOf(dataset.height));
-            products = products + "\n" + product;           
+                    .replace("$type", dataset.type)
+                    .replace("$minLat", String.valueOf(dataset.Minimum_latitude))
+                    .replace("$minLong", String.valueOf(dataset.Westernmost_longitude))
+                    .replace("$maxLat", String.valueOf(dataset.Maximum_latitude))
+                    .replace("$maxLong", String.valueOf(dataset.Easternmost_longitude))
+                    .replace("$centroid_latitude", String.valueOf(dataset.centroid_latitude))
+                    .replace("$centroid_longitude", String.valueOf(dataset.centroid_longitude))
+                    .replace("$latList", latList)
+                    .replace("$longList", longList)
+                    .replace("$width", String.valueOf(dataset.width))
+                    .replace("$height", String.valueOf(dataset.height))
+                    .replace("$resolution", String.valueOf(dataset.resolution));
+            products = products + "\n" + product;
         }
-        
+
         String returnXML = TEMPLATE.replace("$products", products);
-        
+
         // Dump string to request
         response.setContentType("application/xml");
         PrintWriter out;
@@ -240,20 +247,21 @@ public class DataSetEndPoint extends HttpServlet {
             Logger.getLogger(DataSetEndPoint.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Convert a list of strings to a string
+     *
      * @param list
-     * @return 
+     * @return
      */
     private String listToString(List<Double> list) {
         StringBuilder sb = new StringBuilder();
 
-        for(Double d: list) {
-           sb.append(d).append(',');
+        for (Double d : list) {
+            sb.append(d).append(',');
         }
 
-        sb.deleteCharAt(sb.length()-1); //delete last comma
+        sb.deleteCharAt(sb.length() - 1); //delete last comma
         String newString = sb.toString();
         return newString;
     }

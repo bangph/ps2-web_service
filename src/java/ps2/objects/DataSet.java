@@ -11,6 +11,7 @@ import java.util.List;
 /**
  *
  * @author Bang Pham Huu
+ * mailto: b.phamhuu@jacobs-univeristy.de
  */
 public class DataSet {
     public String coverageID = "";
