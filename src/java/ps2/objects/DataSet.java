@@ -19,14 +19,18 @@ public class DataSet {
     public String type = "";
     public List<Double> latList = new ArrayList<Double>();
     public List<Double> longList = new ArrayList<Double>();
-    public double Easternmost_longitude = 0;
-    public double Maximum_latitude = 0;
-    public double Minimum_latitude = 0;
-    public double Westernmost_longitude = 0;
+    public double easternmost_longitude = 0;
+    public double maximum_latitude = 0;
+    public double minimum_latitude = 0;
+    public double westernmost_longitude = 0;
     public double resolution = 0;
-    public double width = 0;
-    public double height = 0;
+    public int width = 0;
+    public int height = 0;
     public double centroid_latitude = 0;
     public double centroid_longitude = 0;
+    public double minimum_east = 0;
+    public double minimum_north = 0;
+    public double maximum_east = 0;
+    public double maximum_north = 0;
 
 }

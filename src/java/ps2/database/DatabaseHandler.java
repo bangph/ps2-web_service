@@ -26,6 +26,7 @@ public class DatabaseHandler {
     // Always query with all the fields from dataset table        
     private final String SELECT_QUERY = "SELECT coverageid, type, easternmost_longitude, maximum_latitude, minimum_latitude, \n"
             + "westernmost_longitude, centroid_longitude, centroid_latitude, width, height, resolution,"
+            + "minimum_east, minimum_north, maximum_east, maximum_north,"
             + "ST_AsText(ST_FlipCoordinates(shape)) as polygon\n"
             + " from dataset ";
 
@@ -187,15 +188,21 @@ public class DatabaseHandler {
         DataSet dataSet = new DataSet();
         dataSet.coverageID = rs.getString("coverageid").trim();
         dataSet.type = rs.getString("type");
-        dataSet.Easternmost_longitude = rs.getDouble("easternmost_longitude");
-        dataSet.Maximum_latitude = rs.getDouble("maximum_latitude");
-        dataSet.Minimum_latitude = rs.getDouble("minimum_latitude");
-        dataSet.Westernmost_longitude = rs.getDouble("westernmost_longitude");
+        dataSet.easternmost_longitude = rs.getDouble("easternmost_longitude");
+        dataSet.maximum_latitude = rs.getDouble("maximum_latitude");
+        dataSet.minimum_latitude = rs.getDouble("minimum_latitude");
+        dataSet.westernmost_longitude = rs.getDouble("westernmost_longitude");
         dataSet.centroid_longitude = rs.getDouble("centroid_longitude");
         dataSet.centroid_latitude = rs.getDouble("centroid_latitude");
         dataSet.width = rs.getInt("width");
         dataSet.height = rs.getInt("height");        
         dataSet.resolution = rs.getDouble("resolution");
+        dataSet.minimum_east = rs.getDouble("minimum_east");
+        dataSet.minimum_north = rs.getDouble("minimum_north");
+        dataSet.maximum_east = rs.getDouble("maximum_east");
+        dataSet.maximum_north = rs.getDouble("maximum_north");
+        
+        
 
         List<ArrayList<Double>> list = getLatLongList(rs.getString("polygon"));
         dataSet.latList = list.get(0);
